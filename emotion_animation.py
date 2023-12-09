@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import librosa
 import matplotlib.pyplot as plt
 import matplotlib
+
 matplotlib.use('TkAgg')
 import matplotlib.animation as animation
 from sklearn.model_selection import train_test_split
@@ -68,10 +69,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
+
 def get_data(i):
     df = prediction(test_df.iloc[i])
     df['Score'] = df['Score'].str.rstrip('%').astype('float') / 100.0
     return df
+
 
 def create_polar_chart(i):
     plt.clf()
@@ -95,14 +98,15 @@ def create_polar_chart(i):
 
     # Draw ylabels
     ax.set_rlabel_position(0)
-    plt.yticks([0.1, 0.2, 0.3, 0.4], ["10","20","30","40"], color="grey", size=7)
-    plt.ylim(0,0.5)
+    plt.yticks([0.1, 0.2, 0.3, 0.4], ["10", "20", "30", "40"], color="grey", size=7)
+    plt.ylim(0, 0.5)
 
     # Plot data
     ax.plot(angles, values, linewidth=1, linestyle='solid')
 
     # Fill area
     ax.fill(angles, values, 'b', alpha=0.1)
+
 
 # Create a figure
 fig = plt.figure()
@@ -112,12 +116,3 @@ ani = animation.FuncAnimation(fig, create_polar_chart, frames=len(test_df), repe
 
 # Display the animation
 plt.show()
-
-
-
-
-
-
-
-
-
