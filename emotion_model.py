@@ -52,6 +52,7 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
         waveform, sample_rate = torchaudio.load(self.file_paths[idx])
+        print(self.file_paths[idx])
         # waveform = Normalizer().fit_transform(waveform)
         inputs = self.processor(waveform.squeeze(), return_tensors="pt", padding="max_length", truncation=True,
                                 max_length=self.max_length, sampling_rate=16000)
@@ -62,24 +63,24 @@ class CustomDataset(Dataset):
 
 # Example usage
 if __name__ == "__main__":
-    df = pd.read_csv('label_path_data.csv').set_index('Unnamed: 0')
+    df = pd.read_csv('D:\speech_emotion_detection/all_path_emotion.csv').set_index('Unnamed: 0')
     train_df, test_df = train_test_split(df, test_size=0.01, stratify=df["emotion"], random_state=42, shuffle=True)
     train_df.reset_index(inplace=True)
     test_df.reset_index(inplace=True)
 
     max_length = 100000
     label_mapping = {
-        'S': 0,
-        'A': 1,
-        'H': 2,
-        'W': 3,
-        'F': 4,
-        'N': 5
+        'neutral': 0,
+        'calm': 1,
+        'happy': 2,
+        'sad': 3,
+        'angry': 4,
+        'fear': 5,
+        'disgust': 6,
+        'surprise': 7
     }
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     processor = Wav2Vec2FeatureExtractor.from_pretrained("anton-l/wav2vec2-base-superb-sd")
-
-
 
     train_dataset = CustomDataset(train_df['path'], train_df['emotion'], processor, max_length,
                                   label_mapping)
@@ -90,10 +91,10 @@ if __name__ == "__main__":
 
     model = EmotionClassifier(feature_size=32, num_classes=len(label_mapping)).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-7)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 
     break_training = 0
-    for epoch in range(80000):
+    for epoch in range(100000):
         if break_training:
             break
         model.train()
@@ -115,15 +116,19 @@ if __name__ == "__main__":
             total_correct = 0
             total_samples = 0
             for inputs, labels in tqdm(test_dataloader, desc=f"Epoch {epoch + 1}"):
-                outputs = model(inputs)
+                outputs = model(inputs.to(device))
                 predicted = torch.argmax(outputs, 1)
-                total_correct += (predicted == torch.argmax(labels, 1)).sum().item()
+                total_correct += (predicted == torch.argmax(labels.to(device), 1)).sum().item()
                 total_samples += labels.size(0)
 
             accuracy = total_correct / total_samples
             print(f"Epoch {epoch + 1}, Loss: {loss.item()}, Validation Accuracy: {accuracy}")
 
-        torch.save(model.state_dict(), f"D:\speech_emotion_detection/pretrained_models/emotion_classifier_{epoch}.pth")
-        model.feature_extractor.save_pretrained(f"D:\speech_emotion_detection/pretrained_models/wav2vec2_model_{epoch}.pth")
+        torch.save(model.state_dict(), f"D:\speech_emotion_detection/pretrained_model/emotion_classifier_{epoch}.pth")
+        model.feature_extractor.save_pretrained(
+            f"D:\speech_emotion_detection/pretrained_model/wav2vec2_model_{epoch}.pth")
 
-    test_df.to_csv('D:\speech_emotion_detection/pretrained_models/evaluation_data_for_emotion_model.csv')
+    test_df.to_csv('D:\speech_emotion_detection/pretrained_model/evaluation_data_for_emotion_model.csv')
+
+# torch.save(model.feature_extractor.state_dict(), 'path/to/save/model_weights.pth')
+# model.feature_extractor.config.save_pretrained('path/to/save')
