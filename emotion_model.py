@@ -52,7 +52,8 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
         waveform, sample_rate = torchaudio.load(self.file_paths[idx])
-        print(self.file_paths[idx])
+        if waveform.shape[0] != 1:
+            waveform = waveform[0:1]
         # waveform = Normalizer().fit_transform(waveform)
         inputs = self.processor(waveform.squeeze(), return_tensors="pt", padding="max_length", truncation=True,
                                 max_length=self.max_length, sampling_rate=16000)
