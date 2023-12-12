@@ -95,7 +95,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 
     break_training = 0
-    for epoch in range(100000):
+    for epoch in range(50):
         if break_training:
             break
         model.train()
@@ -106,10 +106,10 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            if keyboard.is_pressed('q'):
-                break_training = 1
-                print("Training interrupted by user.")
-                break
+            # if keyboard.is_pressed('q'):
+            #     break_training = 1
+            #     print("Training interrupted by user.")
+            #     break
         print(f"Epoch {epoch + 1}, Loss: {loss.item()}")
 
         model.eval()
@@ -125,11 +125,11 @@ if __name__ == "__main__":
             accuracy = total_correct / total_samples
             print(f"Epoch {epoch + 1}, Loss: {loss.item()}, Validation Accuracy: {accuracy}")
 
-        torch.save(model.state_dict(), f"D:\speech_emotion_detection/pretrained_model/emotion_classifier_{epoch}.pth")
+        torch.save(model.state_dict(), f"D:\speech_emotion_detection/pretrained_model_2/emotion_classifier_{epoch}.pth")
         model.feature_extractor.save_pretrained(
-            f"D:\speech_emotion_detection/pretrained_model/wav2vec2_model_{epoch}.pth")
+            f"D:\speech_emotion_detection/pretrained_model_2/wav2vec2_model_{epoch}.pth")
 
-    test_df.to_csv('D:\speech_emotion_detection/pretrained_model/evaluation_data_for_emotion_model.csv')
+    test_df.to_csv('D:\speech_emotion_detection/pretrained_model_2/evaluation_data_for_emotion_model.csv')
 
 # torch.save(model.feature_extractor.state_dict(), 'path/to/save/model_weights.pth')
 # model.feature_extractor.config.save_pretrained('path/to/save')
